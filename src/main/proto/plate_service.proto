@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.rkd.auto.grpc";
+option java_outer_classname = "PlateServiceProto";
+
+package plateservice;
+
+service PlateService {
+  rpc GetPlateStatus (PlateStatusRequest) returns (PlateStatusResponse);
+}
+
+message PlateStatusRequest {
+  string license_plate = 1;
+}
+
+message PlateStatusResponse {
+  string license_plate = 1;
+  double price_until_now = 2;
+  string entry_time = 3;    // ISO 8601
+  string time_parked = 4;   // ISO 8601
+  double lat = 5;
+  double lng = 6;
+}

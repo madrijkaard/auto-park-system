@@ -1,0 +1,22 @@
+server:
+  port: 3003
+
+grpc:
+  server:
+    port: 9090
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/auto-park-system
+    username: admin
+    password: admin
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
+logging:
+  level:
+    org.springframework.r2dbc: DEBUG

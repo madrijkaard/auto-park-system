@@ -1,0 +1,40 @@
+DROP TABLE IF EXISTS revenue;
+DROP TABLE IF EXISTS sector;
+DROP TABLE IF EXISTS spot;
+DROP TABLE IF EXISTS vehicle;
+
+CREATE TABLE revenue (
+    id BIGSERIAL PRIMARY KEY,
+    sector VARCHAR NOT NULL,
+    date DATE NOT NULL,
+    amount DOUBLE PRECISION NOT NULL,
+    currency VARCHAR NOT NULL,
+    timestamp TIMESTAMPTZ NOT NULL
+);
+
+CREATE TABLE sector (
+    name VARCHAR PRIMARY KEY,
+    base_price DOUBLE PRECISION NOT NULL,
+    max_capacity INTEGER NOT NULL,
+    open_hour TIME NOT NULL,
+    close_hour TIME NOT NULL,
+    duration_limit_minutes INTEGER NOT NULL
+);
+
+CREATE TABLE spot (
+    id BIGSERIAL PRIMARY KEY,
+    sector VARCHAR NOT NULL,
+    lat DOUBLE PRECISION NOT NULL,
+    lng DOUBLE PRECISION NOT NULL,
+    occupied BOOLEAN NOT NULL DEFAULT FALSE,
+    license_plate VARCHAR
+);
+
+CREATE TABLE vehicle (
+    id BIGSERIAL PRIMARY KEY,
+    license_plate VARCHAR NOT NULL,
+    event_type VARCHAR NOT NULL,
+    timestamp TIMESTAMPTZ NOT NULL,
+    lat DOUBLE PRECISION,
+    lng DOUBLE PRECISION
+);

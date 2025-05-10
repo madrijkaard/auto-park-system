@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.rkd.auto.grpc";
+option java_outer_classname = "SpotServiceProto";
+
+package spotservice;
+
+service SpotService {
+  rpc GetSpotStatus (SpotStatusRequest) returns (SpotStatusResponse);
+}
+
+message SpotStatusRequest {
+  double lat = 1;
+  double lng = 2;
+}
+
+message SpotStatusResponse {
+  bool ocupied = 1;
+  string license_plate = 2;
+  double price_until_now = 3;
+  string entry_time = 4;      // ISO 8601
+  string time_parked = 5;     // ISO 8601
+}

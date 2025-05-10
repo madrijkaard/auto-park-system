@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.rkd.auto.grpc";
+option java_outer_classname = "RevenueServiceProto";
+
+package revenueservice;
+
+service RevenueService {
+  rpc GetRevenue (RevenueRequest) returns (RevenueResponse);
+}
+
+message RevenueRequest {
+  string date = 1;     // ISO format: YYYY-MM-DD
+  string sector = 2;
+}
+
+message RevenueResponse {
+  double amount = 1;
+  string currency = 2;
+  string timestamp = 3; // ISO 8601
+}

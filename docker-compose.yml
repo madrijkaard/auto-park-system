@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: auto-park-system
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./volumes/postgres/pgdata:/var/lib/postgresql/data
+
+  pgadmin: # http://localhost:5050
+    image: dpage/pgadmin4:latest
+    container_name: pg_admin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: mad.rijkaard@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
