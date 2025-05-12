@@ -1,7 +1,6 @@
 package com.rkd.auto.consumer;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.rkd.auto.grpc.WebhookEventRequest;
 import com.rkd.auto.request.VehicleRequest;
 import com.rkd.auto.service.VehicleService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -22,7 +21,7 @@ public class VehicleConsumer {
     @KafkaListener(topics = "vehicle-events", groupId = "auto-park-group")
     public void consume(ConsumerRecord<String, byte[]> record) {
         try {
-            WebhookEventRequest req = WebhookEventRequest.parseFrom(record.value());
+            com.rkd.auto.grpc.VehicleRequest req = com.rkd.auto.grpc.VehicleRequest.parseFrom(record.value());
 
             VehicleRequest restRequest = new VehicleRequest(
                     req.getLicensePlate(),

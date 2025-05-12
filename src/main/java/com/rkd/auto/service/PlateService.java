@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.List;
 
 @Service
@@ -32,17 +33,15 @@ public class PlateService {
     }
 
     public Mono<PlateStatusResponse> getPlateStatus(PlateStatusRequest request) {
-
         String plate = request.licensePlate();
 
         return vehicleRepository.findByLicensePlateOrderByTimestampDesc(plate)
                 .collectList()
                 .flatMap(events -> {
-
                     VehicleModel entry = findEvent(events, "ENTRY");
                     VehicleModel parked = findEvent(events, "PARKED");
 
-                    if (parked != null && parked.isValidParked()) {
+                    if (parked != null && parked.isValidParked() && entry != null) {
                         return buildParkedResponse(plate, entry, parked);
                     }
 
@@ -51,7 +50,6 @@ public class PlateService {
                     log.info("Placa {} não está estacionada. Última entrada: {}", plate, response.entryTime());
 
                     return Mono.just(response);
-
                 })
                 .doOnSuccess(response ->
                         log.info("Status da placa '{}' resolvido com sucesso: {}", plate, response))
@@ -63,19 +61,26 @@ public class PlateService {
         return spotRepository.findByLatAndLng(parked.lat(), parked.lng())
                 .flatMap(spot ->
                         pricingService.calculateCurrentPriceBySector(spot.sector())
-                                .map(price -> {
-                                    if (price == Double.MAX_VALUE) {
+                                .map(pricePerHour -> {
+                                    if (pricePerHour == Double.MAX_VALUE) {
                                         throw new IllegalStateException("Setor está totalmente lotado. Entrada não permitida.");
                                     }
+
+                                    long minutes = Duration.between(entry.timestamp(), parked.timestamp()).toMinutes();
+                                    double totalPrice = roundToTwoDecimals(pricePerHour * (minutes / 60.0));
+
                                     PlateStatusResponse response = new PlateStatusResponse(
                                             plate,
-                                            price,
-                                            entry != null ? entry.timestamp() : null,
+                                            totalPrice,
+                                            entry.timestamp(),
                                             parked.timestamp(),
                                             parked.lat(),
                                             parked.lng()
                                     );
-                                    log.info("Placa {} está estacionada em setor {}. Preço atual: {}", plate, spot.sector(), price);
+
+                                    log.info("Placa {} está estacionada em setor {}. Preço/hora: {}, Total: {}",
+                                            plate, spot.sector(), pricePerHour, totalPrice);
+
                                     return response;
                                 })
                 );
@@ -97,5 +102,9 @@ public class PlateService {
                 .filter(e -> type.equalsIgnoreCase(e.eventType().name()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private double roundToTwoDecimals(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }

@@ -3,8 +3,10 @@ package com.rkd.auto.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rkd.auto.config.TestConfig;
+import com.rkd.auto.model.SectorModel;
 import com.rkd.auto.model.SpotModel;
 import com.rkd.auto.model.VehicleModel;
+import com.rkd.auto.repository.SectorRepository;
 import com.rkd.auto.repository.SpotRepository;
 import com.rkd.auto.repository.VehicleRepository;
 import com.rkd.auto.type.EventType;
@@ -16,9 +18,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 
@@ -34,15 +38,22 @@ class SpotControllerTest {
     private SpotRepository spotRepository;
 
     @Autowired
+    private SectorRepository sectorRepository;
+
+    @Autowired
     private VehicleRepository vehicleRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private R2dbcEntityTemplate r2dbcEntityTemplate;
+
     @AfterEach
     void cleanUp() {
         vehicleRepository.deleteAll().block();
         spotRepository.deleteAll().block();
+        sectorRepository.deleteAll().block();
     }
 
     @Test
@@ -50,17 +61,30 @@ class SpotControllerTest {
 
         double lat = -23.55052;
         double lng = -46.633308;
+        String sectorName = "SECTOR_1";
         String licensePlate = "XYZ1234";
         ZonedDateTime now = ZonedDateTime.parse("2025-05-11T12:00:00Z");
 
+        var sectorModel = new SectorModel(
+                sectorName,
+                10.0,
+                100,
+                LocalTime.of(8, 0),
+                LocalTime.of(22, 0),
+                240
+        );
+
+        r2dbcEntityTemplate.insert(SectorModel.class).using(sectorModel).block();
+
         SpotModel spotModel = new SpotModel(
                 null,
-                "SECTOR_1",
+                sectorName,
                 lat,
                 lng,
                 true,
                 licensePlate
         );
+
         spotRepository.save(spotModel).block();
 
         VehicleModel entry = new VehicleModel(
@@ -71,6 +95,7 @@ class SpotControllerTest {
                 lat,
                 lng
         );
+
         VehicleModel parked = new VehicleModel(
                 null,
                 licensePlate,

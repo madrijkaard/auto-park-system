@@ -20,10 +20,16 @@ public class SpotService {
 
     private final SpotRepository spotRepository;
     private final VehicleRepository vehicleRepository;
+    private final PricingService pricingService;
 
-    public SpotService(SpotRepository spotRepository, VehicleRepository vehicleRepository) {
+    public SpotService(
+            SpotRepository spotRepository,
+            VehicleRepository vehicleRepository,
+            PricingService pricingService
+    ) {
         this.spotRepository = spotRepository;
         this.vehicleRepository = vehicleRepository;
+        this.pricingService = pricingService;
     }
 
     public Mono<SpotStatusResponse> getSpotStatus(SpotStatusRequest request) {
@@ -45,22 +51,40 @@ public class SpotService {
 
         return vehicleRepository.findByLicensePlateOrderByTimestampDesc(licensePlate)
                 .collectList()
-                .map(vehicleEvents -> toSpotStatusResponse(spot, vehicleEvents));
+                .flatMap(vehicleEvents -> {
+                    VehicleModel entryEvent = findEventByType(vehicleEvents, "ENTRY");
+                    VehicleModel parkedEvent = findEventByType(vehicleEvents, "PARKED");
+
+                    if (parkedEvent == null) {
+                        return Mono.just(new SpotStatusResponse(
+                                spot.occupied(),
+                                spot.licensePlate(),
+                                0.0,
+                                entryEvent != null ? entryEvent.timestamp() : null,
+                                null
+                        ));
+                    }
+
+                    return pricingService.calculateCurrentPriceBySector(spot.sector())
+                            .onErrorReturn(Double.MAX_VALUE)
+                            .map(pricePerHour -> {
+                                long minutesParked = java.time.Duration.between(parkedEvent.timestamp(), java.time.ZonedDateTime.now()).toMinutes();
+                                double hours = minutesParked / 60.0;
+                                double totalPrice = roundToTwoDecimals(pricePerHour * hours);
+
+                                return new SpotStatusResponse(
+                                        spot.occupied(),
+                                        spot.licensePlate(),
+                                        totalPrice,
+                                        entryEvent != null ? entryEvent.timestamp() : null,
+                                        parkedEvent.timestamp()
+                                );
+                            });
+                });
     }
 
-    private SpotStatusResponse toSpotStatusResponse(SpotModel spot, List<VehicleModel> vehicleEvents) {
-        VehicleModel entryEvent = findEventByType(vehicleEvents, "ENTRY");
-        VehicleModel parkedEvent = findEventByType(vehicleEvents, "PARKED");
-
-        double price = 0.0;
-
-        return new SpotStatusResponse(
-                spot.occupied(),
-                spot.licensePlate(),
-                price,
-                entryEvent != null ? entryEvent.timestamp() : null,
-                parkedEvent != null ? parkedEvent.timestamp() : null
-        );
+    private double roundToTwoDecimals(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 
     private VehicleModel findEventByType(List<VehicleModel> events, String eventType) {

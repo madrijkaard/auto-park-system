@@ -1,6 +1,5 @@
 package com.rkd.auto.controller;
 
-import com.rkd.auto.grpc.WebhookEventRequest;
 import com.rkd.auto.producer.VehicleProducer;
 import com.rkd.auto.request.VehicleRequest;
 import org.springframework.http.HttpStatus;
@@ -19,9 +18,9 @@ public class VehicleController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public Mono<Void> handleEvent(@RequestBody VehicleRequest vehicleRequest) {
+    public Mono<Void> sendEvent(@RequestBody VehicleRequest vehicleRequest) {
 
-        WebhookEventRequest.Builder builder = WebhookEventRequest.newBuilder()
+        com.rkd.auto.grpc.VehicleRequest.Builder builder = com.rkd.auto.grpc.VehicleRequest.newBuilder()
                 .setLicensePlate(vehicleRequest.licensePlate())
                 .setEventType(vehicleRequest.eventType());
 

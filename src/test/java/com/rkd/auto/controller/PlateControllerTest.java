@@ -60,22 +60,22 @@ class PlateControllerTest {
 
     @Test
     void mustReturn90PercentPriceWhenOccupancyIsBelowOrEqual25Percent() {
-        runPricingTest(4, 1, 10.0 * 0.90); // 25% de ocupação
+        runPricingTest(4, 1, 10.0 * 0.90);
     }
 
     @Test
     void mustReturnBasePriceWhenOccupancyIsBelowOrEqual50Percent() {
-        runPricingTest(4, 2, 10.0); // 50% de ocupação
+        runPricingTest(4, 2, 10.0);
     }
 
     @Test
     void mustReturn110PercentPriceWhenOccupancyIsBelowOrEqual75Percent() {
-        runPricingTest(4, 3, 10.0 * 1.10); // 75% de ocupação
+        runPricingTest(4, 3, 10.0 * 1.10);
     }
 
     @Test
     void mustReturn125PercentPriceWhenOccupancyIsBelow100Percent() {
-        runPricingTest(5, 4, 10.0 * 1.25); // 80% de ocupação
+        runPricingTest(5, 4, 10.0 * 1.25);
     }
 
     @Test
@@ -83,7 +83,7 @@ class PlateControllerTest {
         runConflictTest(4, 4);
     }
 
-    private void runPricingTest(int totalSpots, int occupiedCount, double expectedPrice) {
+    private void runPricingTest(int totalSpots, int occupiedCount, double expectedHourlyPrice) {
 
         String licensePlate = "TEST123";
         String sector = "DYNAMIC_SECTOR" + totalSpots + "_" + occupiedCount;
@@ -157,11 +157,8 @@ class PlateControllerTest {
                 .expectBody()
                 .jsonPath("$.price_until_now").value(val -> {
                     double actual = Double.parseDouble(val.toString());
-                    if (Double.isInfinite(expectedPrice)) {
-                        assertEquals(Double.POSITIVE_INFINITY, actual);
-                    } else {
-                        assertEquals(expectedPrice, actual, 0.001);
-                    }
+                    double expectedTotal = expectedHourlyPrice * (2.0 / 60.0);
+                    assertEquals(expectedTotal, actual, 0.01);
                 });
     }
 

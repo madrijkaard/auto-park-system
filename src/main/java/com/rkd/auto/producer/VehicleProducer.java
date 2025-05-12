@@ -1,6 +1,6 @@
 package com.rkd.auto.producer;
 
-import com.rkd.auto.grpc.WebhookEventRequest;
+import com.rkd.auto.grpc.VehicleRequest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -14,7 +14,7 @@ public class VehicleProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public Mono<Void> sendEvent(WebhookEventRequest request) {
+    public Mono<Void> sendEvent(VehicleRequest request) {
         return Mono.create(sink ->
                 kafkaTemplate
                         .send("vehicle-events", request.toByteArray())

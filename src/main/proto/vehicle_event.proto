@@ -2,15 +2,15 @@ syntax = "proto3";
 
 option java_multiple_files = true;
 option java_package = "com.rkd.auto.grpc";
-option java_outer_classname = "VehicleEventProto";
+option java_outer_classname = "VehicleServiceProto";
 
-package vehicleevent;
+package vehicleservice;
 
-service VehicleEventService {
-  rpc ProcessWebhookEvent (WebhookEventRequest) returns (EmptyResponse);
+service VehicleService {
+  rpc SendEvent (VehicleRequest) returns (EmptyResponse);
 }
 
-message WebhookEventRequest {
+message VehicleRequest {
   string license_plate = 1;
   string event_type = 2;
   string entry_time = 3;

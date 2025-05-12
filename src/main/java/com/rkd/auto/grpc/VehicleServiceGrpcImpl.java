@@ -8,7 +8,7 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import java.time.ZonedDateTime;
 
 @GrpcService
-public class VehicleServiceGrpcImpl extends VehicleEventServiceGrpc.VehicleEventServiceImplBase {
+public class VehicleServiceGrpcImpl extends VehicleServiceGrpc.VehicleServiceImplBase {
 
     private final VehicleService vehicleService;
 
@@ -17,7 +17,7 @@ public class VehicleServiceGrpcImpl extends VehicleEventServiceGrpc.VehicleEvent
     }
 
     @Override
-    public void processWebhookEvent(WebhookEventRequest request, StreamObserver<EmptyResponse> responseObserver) {
+    public void sendEvent(com.rkd.auto.grpc.VehicleRequest request, StreamObserver<EmptyResponse> responseObserver) {
         VehicleRequest restRequest =
                 new VehicleRequest(
                         request.getLicensePlate(),
