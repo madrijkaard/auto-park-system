@@ -17,6 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static com.rkd.auto.definition.ApiDefinition.Revenue.GET_REVENUE;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -55,7 +56,7 @@ class RevenueControllerTest {
 
         webTestClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/revenue")
+                        .path(GET_REVENUE)
                         .queryParam("sector", sector)
                         .queryParam("date", date.toString())
                         .build()

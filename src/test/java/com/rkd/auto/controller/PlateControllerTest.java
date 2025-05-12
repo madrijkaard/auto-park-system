@@ -18,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalTime;
@@ -26,7 +25,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static com.rkd.auto.definition.ApiDefinition.Plate.POST_PLATE_STATUS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -149,8 +150,8 @@ class PlateControllerTest {
                 .put("license_plate", licensePlate);
 
         webTestClient.post()
-                .uri("/plate-status")
-                .contentType(MediaType.APPLICATION_JSON)
+                .uri(POST_PLATE_STATUS)
+                .contentType(APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
                 .expectStatus().isOk()
@@ -206,8 +207,8 @@ class PlateControllerTest {
                 .put("license_plate", licensePlate);
 
         webTestClient.post()
-                .uri("/plate-status")
-                .contentType(MediaType.APPLICATION_JSON)
+                .uri(POST_PLATE_STATUS)
+                .contentType(APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);

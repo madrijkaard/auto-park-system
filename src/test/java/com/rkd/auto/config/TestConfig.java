@@ -1,6 +1,6 @@
 package com.rkd.auto.config;
 
-import com.rkd.auto.container.KafkaTestContainer;
+import com.rkd.auto.container.KafkaContainer;
 import com.rkd.auto.container.PostgresContainer;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +15,7 @@ public class TestConfig {
     }
 
     @Bean
-    public KafkaTestContainer kafkaTestContainer() {
-        return new KafkaTestContainer();
+    public KafkaContainer kafkaTestContainer() {
+        return new KafkaContainer();
     }
 }

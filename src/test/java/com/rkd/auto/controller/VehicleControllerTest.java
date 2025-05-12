@@ -13,10 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
+
+import static com.rkd.auto.definition.ApiDefinition.Vehicle.POST_WEBHOOK;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -43,14 +46,14 @@ class VehicleControllerTest {
         ObjectNode objectNode = objectMapper.createObjectNode()
                 .put("license_plate", "ABC9999")
                 .put("event_type", "ENTRY")
-                .put("entry_time", "2025-05-09T23:10:00Z")
+                .put("entry_time", ZonedDateTime.now().toString())
                 .put("exit_time", "")
                 .put("lat", -23.55052)
                 .put("lng", -46.633308);
 
         webTestClient.post()
-                .uri("/webhook")
-                .contentType(MediaType.APPLICATION_JSON)
+                .uri(POST_WEBHOOK)
+                .contentType(APPLICATION_JSON)
                 .bodyValue(objectNode)
                 .exchange()
                 .expectStatus().isAccepted();

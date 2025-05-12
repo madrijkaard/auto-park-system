@@ -19,12 +19,14 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static com.rkd.auto.definition.ApiDefinition.Spot.POST_SPOT_STATUS;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -112,8 +114,8 @@ class SpotControllerTest {
                 .put("lng", lng);
 
         webTestClient.post()
-                .uri("/spot-status")
-                .contentType(MediaType.APPLICATION_JSON)
+                .uri(POST_SPOT_STATUS)
+                .contentType(APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
                 .expectStatus().isOk()

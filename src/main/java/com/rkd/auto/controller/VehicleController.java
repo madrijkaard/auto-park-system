@@ -2,12 +2,17 @@ package com.rkd.auto.controller;
 
 import com.rkd.auto.producer.VehicleProducer;
 import com.rkd.auto.request.VehicleRequest;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import static com.rkd.auto.definition.ApiDefinition.Vehicle.POST_WEBHOOK;
+import static org.springframework.http.HttpStatus.ACCEPTED;
+
+@Validated
 @RestController
-@RequestMapping("/webhook")
+@RequestMapping(POST_WEBHOOK)
 public class VehicleController {
 
     private final VehicleProducer vehicleProducer;
@@ -17,29 +22,30 @@ public class VehicleController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public Mono<Void> sendEvent(@RequestBody VehicleRequest vehicleRequest) {
+    @ResponseStatus(ACCEPTED)
+    public Mono<Void> sendEvent(@RequestBody @Valid VehicleRequest vehicleRequest) {
 
-        com.rkd.auto.grpc.VehicleRequest.Builder builder = com.rkd.auto.grpc.VehicleRequest.newBuilder()
+        var entryTime = vehicleRequest.entryTime();
+        var exitTime = vehicleRequest.exitTime();
+
+        com.rkd.auto.grpc.VehicleRequest.Builder request = com.rkd.auto.grpc.VehicleRequest.newBuilder()
                 .setLicensePlate(vehicleRequest.licensePlate())
-                .setEventType(vehicleRequest.eventType());
+                .setEventType(vehicleRequest.eventType())
+                .setLat(vehicleRequest.lat())
+                .setLng(vehicleRequest.lng());
 
-        if (vehicleRequest.entryTime() != null) {
-            builder.setEntryTime(vehicleRequest.entryTime().toString());
+        if (entryTime == null && exitTime == null) {
+            throw new IllegalArgumentException();
         }
 
-        if (vehicleRequest.exitTime() != null) {
-            builder.setExitTime(vehicleRequest.exitTime().toString());
+        if (entryTime != null) {
+            request.setEntryTime(entryTime.toString());
         }
 
-        if (vehicleRequest.lat() != null) {
-            builder.setLat(vehicleRequest.lat());
+        if (exitTime != null) {
+            request.setExitTime(exitTime.toString());
         }
 
-        if (vehicleRequest.lng() != null) {
-            builder.setLng(vehicleRequest.lng());
-        }
-
-        return vehicleProducer.sendEvent(builder.build());
+        return vehicleProducer.sendEvent(request.build());
     }
 }

@@ -3,16 +3,15 @@ package com.rkd.auto.container;
 import com.rkd.auto.config.ContainerConfig;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.DynamicPropertyRegistry;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @Component
-public class KafkaTestContainer implements ContainerConfig {
+public class KafkaContainer implements ContainerConfig {
 
-    private final KafkaContainer kafkaContainer;
+    private final org.testcontainers.containers.KafkaContainer kafkaContainer;
 
-    public KafkaTestContainer() {
-        this.kafkaContainer = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.1"));
+    public KafkaContainer() {
+        this.kafkaContainer = new org.testcontainers.containers.KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.1"));
         this.kafkaContainer.start();
     }
 
