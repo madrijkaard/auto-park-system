@@ -16,8 +16,9 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static com.rkd.auto.definition.ApiDefinition.Revenue.GET_REVENUE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -76,5 +77,35 @@ class RevenueControllerTest {
             assertNotNull(saved);
             assertEquals(amount, saved.amount());
         });
+    }
+
+    @Test
+    void mustReturn400WhenDateIsMissing() {
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(GET_REVENUE)
+                        .queryParam("sector", "SECTOR_ABC")
+                        .build()
+                )
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.code").isEqualTo("INVALID_INPUT")
+                .jsonPath("$.message").isEqualTo("The 'date' field cannot be null");
+    }
+
+    @Test
+    void mustReturn400WhenSectorIsMissing() {
+        webTestClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(GET_REVENUE)
+                        .queryParam("date", LocalDate.of(2025, 5, 11).toString())
+                        .build()
+                )
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.code").isEqualTo("INVALID_INPUT")
+                .jsonPath("$.message").isEqualTo("The 'sector' field cannot be blank");
     }
 }

@@ -25,8 +25,8 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.concurrent.TimeUnit;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static com.rkd.auto.definition.ApiDefinition.Spot.POST_SPOT_STATUS;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @SpringBootTest
 @Import(TestConfig.class)
@@ -136,5 +136,39 @@ class SpotControllerTest {
             Assertions.assertNotNull(savedSpot);
             Assertions.assertTrue(savedSpot.occupied());
         });
+    }
+
+    @Test
+    void mustReturn400WhenLatIsNull() {
+        ObjectNode request = objectMapper.createObjectNode()
+                .putNull("lat")
+                .put("lng", -46.633308);
+
+        webTestClient.post()
+                .uri(POST_SPOT_STATUS)
+                .contentType(APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.code").isEqualTo("INVALID_INPUT")
+                .jsonPath("$.message").isEqualTo("The 'lat' field cannot be null");
+    }
+
+    @Test
+    void mustReturn400WhenLngIsNull() {
+        ObjectNode request = objectMapper.createObjectNode()
+                .put("lat", -23.55052)
+                .putNull("lng");
+
+        webTestClient.post()
+                .uri(POST_SPOT_STATUS)
+                .contentType(APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.code").isEqualTo("INVALID_INPUT")
+                .jsonPath("$.message").isEqualTo("The 'lng' field cannot be null");
     }
 }

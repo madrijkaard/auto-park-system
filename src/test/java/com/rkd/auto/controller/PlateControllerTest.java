@@ -213,4 +213,20 @@ class PlateControllerTest {
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.CONFLICT);
     }
+
+    @Test
+    void mustReturn400WhenLicensePlateIsBlank() {
+        ObjectNode request = objectMapper.createObjectNode()
+                .put("license_plate", "");
+
+        webTestClient.post()
+                .uri(POST_PLATE_STATUS)
+                .contentType(APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.code").isEqualTo("INVALID_INPUT")
+                .jsonPath("$.message").isEqualTo("The 'license_plate' field cannot be blank");
+    }
 }
