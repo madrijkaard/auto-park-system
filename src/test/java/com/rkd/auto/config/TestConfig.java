@@ -15,7 +15,7 @@ public class TestConfig {
     }
 
     @Bean
-    public KafkaContainer kafkaTestContainer() {
+    public KafkaContainer kafkaContainer() {
         return new KafkaContainer();
     }
 }

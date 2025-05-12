@@ -1,5 +1,6 @@
 package com.rkd.auto.service;
 
+import com.rkd.auto.exception.NotFoundException;
 import com.rkd.auto.model.SpotModel;
 import com.rkd.auto.model.VehicleModel;
 import com.rkd.auto.repository.SpotRepository;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+
+import static com.rkd.auto.type.ExceptionType.NOT_FOUND;
 
 @Service
 public class SpotService {
@@ -34,7 +37,7 @@ public class SpotService {
 
     public Mono<SpotStatusResponse> getSpotStatus(SpotStatusRequest request) {
         return findSpotByCoordinates(request)
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("Vaga não encontrada para coordenadas informadas")))
+                .switchIfEmpty(Mono.error(new NotFoundException(NOT_FOUND, "Spot")))
                 .flatMap(this::buildSpotStatusResponse)
                 .doOnSuccess(response ->
                         log.info("Status da vaga consultado: placa={}, ocupada={}", response.licensePlate(), response.ocupied()))

@@ -171,4 +171,25 @@ class SpotControllerTest {
                 .jsonPath("$.code").isEqualTo("INVALID_INPUT")
                 .jsonPath("$.message").isEqualTo("The 'lng' field cannot be null");
     }
+
+    @Test
+    void mustReturn404WhenSpotIsNotFound() {
+
+        double lat = -99.9999;
+        double lng = -99.9999;
+
+        ObjectNode request = objectMapper.createObjectNode()
+                .put("lat", lat)
+                .put("lng", lng);
+
+        webTestClient.post()
+                .uri(POST_SPOT_STATUS)
+                .contentType(APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .jsonPath("$.code").isEqualTo("NOT_FOUND")
+                .jsonPath("$.message").isEqualTo("Spot not found");
+    }
 }

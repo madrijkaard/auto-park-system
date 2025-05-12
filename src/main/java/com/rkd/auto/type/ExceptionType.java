@@ -2,7 +2,8 @@ package com.rkd.auto.type;
 
 public enum ExceptionType {
 
-    INVALID_INPUT_FIELD("INVALID_INPUT", "Invalid input field");
+    INVALID_INPUT_FIELD("INVALID_INPUT", "Invalid input field"),
+    NOT_FOUND("NOT_FOUND", "%s not found");
 
     private final String code;
     private final String message;

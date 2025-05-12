@@ -17,13 +17,12 @@ public final class MessageDefinition {
     public static final class Spot {
         public static final String LAT_CANNOT_NULL = "The 'lat' field cannot be null";
         public static final String LNG_CANNOT_NULL = "The 'lng' field cannot be null";
+        public static final String SPOT_NOT_FOUND = "Spot not found";
     }
 
     public static final class Vehicle {
         public static final String LICENSE_PLATE_CANNOT_BLANK = "The 'license_plate' field cannot be blank";
         public static final String EVENT_TYPE_CANNOT_BLANK = "The 'event_type' field cannot be blank";
-        public static final String ENTRY_TIME_CANNOT_BE_IN_THE_PAST = "The 'entry_time' field cannot be in the past";
-        public static final String EXIT_TIME_CANNOT_BE_IN_THE_PAST = "The 'exit_time' field cannot be in the past";
         public static final String LAT_CANNOT_NULL = "The 'lat' field cannot be null";
         public static final String LNG_CANNOT_NULL = "The 'lng' field cannot be null";
     }
