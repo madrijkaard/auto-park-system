@@ -55,24 +55,43 @@
 ## Architecture
 
 ```mermaid
-flowchart LR
+flowchart TD
+    %% --- VEHICLE INGESTION ---
     subgraph Simulator
-        A[garage-sim<br/>docker] --POST /webhook--> VC[VehicleController]
+        A[garage-sim
+Docker] -- POST /webhook --> VC[VehicleController]
     end
 
-    VC --Kafka--> KP[VehicleProducer]
-    KP --> K[(Kafka Topic<br/>vehicle.events)]
-    K --> VS[VehicleService]
-    VS --> DB[(PostgreSQL<br/>R2DBC)]
+    VC -- Kafka --> VP[VehicleProducer] --> KT[(Kafka Topic
+vehicle.events)]
+    KT --> VCON[VehicleConsumer] --> VS[VehicleService] --> VR[VehicleRepository] --> DB[(PostgreSQL
+R2DBC)]
 
-    SC[SpotController] --> VS
-    PC[PlateController] --> VS
-    RC[RevenueController] --> RS[RevenueService] --> DB
+    %% --- SPOT STATUS QUERY ---
+    subgraph Spot Query
+        SC[SpotController] --> SS[SpotService]
+        SS --> SR[SpotRepository]
+        SS --> VR2[VehicleRepository]
+        SS --> PR[PricingService]
+        PR --> SecR[SectorRepository]
+        PR --> SR
+    end
 
-    style K fill:#F4A261,color:#000
+    %% --- PLATE STATUS QUERY ---
+    subgraph Plate Query
+        PC[PlateController] --> PS[PlateService]
+        PS --> VR3[VehicleRepository]
+        PS --> SR2[SpotRepository]
+        PS --> PR
+    end
+
+    %% --- REVENUE REPORT ---
+    subgraph Revenue Query
+        RC[RevenueController] --> RVS[RevenueService] --> RevR[RevenueRepository] --> DB
+    end
+
+    style KT fill:#F4A261,color:#000
 ```
-
----
 
 ## Tech Stack
 
