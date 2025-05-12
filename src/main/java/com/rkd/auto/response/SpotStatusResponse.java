@@ -1,12 +1,18 @@
 package com.rkd.auto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.ZonedDateTime;
 
 public record SpotStatusResponse(
         boolean ocupied,
-        String license_plate,
-        double price_until_now,
-        ZonedDateTime entry_time,
-        ZonedDateTime time_parked
+        @JsonProperty("license_plate")
+        String licensePlate,
+        @JsonProperty("price_until_now")
+        double priceUntilNow,
+        @JsonProperty("entry_time")
+        ZonedDateTime entryTime,
+        @JsonProperty("parked_time")
+        ZonedDateTime timeParked
 ) {
 }

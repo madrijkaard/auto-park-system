@@ -23,14 +23,14 @@ public class SpotServiceGrpcImpl extends SpotServiceGrpc.SpotServiceImplBase {
                 result -> {
                     SpotStatusResponse.Builder builder = SpotStatusResponse.newBuilder()
                             .setOcupied(result.ocupied())
-                            .setLicensePlate(result.license_plate())
-                            .setPriceUntilNow(result.price_until_now());
+                            .setLicensePlate(result.licensePlate())
+                            .setPriceUntilNow(result.priceUntilNow());
 
-                    if (result.entry_time() != null)
-                        builder.setEntryTime(result.entry_time().toString());
+                    if (result.entryTime() != null)
+                        builder.setEntryTime(result.entryTime().toString());
 
-                    if (result.time_parked() != null)
-                        builder.setTimeParked(result.time_parked().toString());
+                    if (result.timeParked() != null)
+                        builder.setTimeParked(result.timeParked().toString());
 
                     responseObserver.onNext(builder.build());
                     responseObserver.onCompleted();

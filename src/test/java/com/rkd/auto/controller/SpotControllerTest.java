@@ -1,0 +1,113 @@
+package com.rkd.auto.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.rkd.auto.config.TestConfig;
+import com.rkd.auto.model.SpotModel;
+import com.rkd.auto.model.VehicleModel;
+import com.rkd.auto.repository.SpotRepository;
+import com.rkd.auto.repository.VehicleRepository;
+import com.rkd.auto.type.EventType;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.reactive.server.WebTestClient;
+
+import java.time.ZonedDateTime;
+import java.util.concurrent.TimeUnit;
+
+@SpringBootTest
+@Import(TestConfig.class)
+@AutoConfigureWebTestClient
+class SpotControllerTest {
+
+    @Autowired
+    private WebTestClient webTestClient;
+
+    @Autowired
+    private SpotRepository spotRepository;
+
+    @Autowired
+    private VehicleRepository vehicleRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @AfterEach
+    void cleanUp() {
+        vehicleRepository.deleteAll().block();
+        spotRepository.deleteAll().block();
+    }
+
+    @Test
+    void mustReturnSpotStatusSuccessfully() {
+
+        double lat = -23.55052;
+        double lng = -46.633308;
+        String licensePlate = "XYZ1234";
+        ZonedDateTime now = ZonedDateTime.parse("2025-05-11T12:00:00Z");
+
+        SpotModel spotModel = new SpotModel(
+                null,
+                "SECTOR_1",
+                lat,
+                lng,
+                true,
+                licensePlate
+        );
+        spotRepository.save(spotModel).block();
+
+        VehicleModel entry = new VehicleModel(
+                null,
+                licensePlate,
+                EventType.ENTRY,
+                now,
+                lat,
+                lng
+        );
+        VehicleModel parked = new VehicleModel(
+                null,
+                licensePlate,
+                EventType.PARKED,
+                now.plusMinutes(2),
+                lat,
+                lng
+        );
+
+        vehicleRepository.saveAll(java.util.List.of(entry, parked)).collectList().block();
+
+        ObjectNode request = objectMapper.createObjectNode()
+                .put("lat", lat)
+                .put("lng", lng);
+
+        webTestClient.post()
+                .uri("/spot-status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(request)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.ocupied").isEqualTo(true)
+                .jsonPath("$.license_plate").isEqualTo(licensePlate)
+                .jsonPath("$.entry_time").value(val -> {
+                    ZonedDateTime responseTime = ZonedDateTime.parse(val.toString());
+                    Assertions.assertEquals(entry.timestamp().toInstant(), responseTime.toInstant());
+                })
+                .jsonPath("$.parked_time").value(val -> {
+                    ZonedDateTime responseTime = ZonedDateTime.parse(val.toString());
+                    Assertions.assertEquals(parked.timestamp().toInstant(), responseTime.toInstant());
+                });
+
+        Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
+            SpotModel savedSpot = spotRepository.findByLatAndLng(lat, lng).block();
+            Assertions.assertNotNull(savedSpot);
+            Assertions.assertTrue(savedSpot.occupied());
+        });
+    }
+}

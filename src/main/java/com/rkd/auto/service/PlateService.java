@@ -5,6 +5,8 @@ import com.rkd.auto.repository.SpotRepository;
 import com.rkd.auto.repository.VehicleRepository;
 import com.rkd.auto.request.PlateStatusRequest;
 import com.rkd.auto.response.PlateStatusResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -12,6 +14,8 @@ import java.util.List;
 
 @Service
 public class PlateService {
+
+    private static final Logger log = LoggerFactory.getLogger(PlateService.class);
 
     private final VehicleRepository vehicleRepository;
     private final SpotRepository spotRepository;
@@ -28,36 +32,53 @@ public class PlateService {
     }
 
     public Mono<PlateStatusResponse> getPlateStatus(PlateStatusRequest request) {
-        return vehicleRepository.findByLicensePlateOrderByTimestampDesc(request.licensePlate())
+
+        String plate = request.licensePlate();
+
+        return vehicleRepository.findByLicensePlateOrderByTimestampDesc(plate)
                 .collectList()
-                .flatMap(events -> buildResponse(request.licensePlate(), events));
+                .flatMap(events -> {
+
+                    VehicleModel entry = findEvent(events, "ENTRY");
+                    VehicleModel parked = findEvent(events, "PARKED");
+
+                    if (parked != null && parked.isValidParked()) {
+                        return buildParkedResponse(plate, entry, parked);
+                    }
+
+                    PlateStatusResponse response = buildNotParkedResponse(plate, entry);
+
+                    log.info("Placa {} não está estacionada. Última entrada: {}", plate, response.entryTime());
+
+                    return Mono.just(response);
+
+                })
+                .doOnSuccess(response ->
+                        log.info("Status da placa '{}' resolvido com sucesso: {}", plate, response))
+                .doOnError(error ->
+                        log.error("Erro ao processar status da placa '{}': {}", plate, error.getMessage(), error));
     }
-
-    private Mono<PlateStatusResponse> buildResponse(String plate, List<VehicleModel> vehicles) {
-
-        VehicleModel entry = findEvent(vehicles, "ENTRY");
-        VehicleModel parked = findEvent(vehicles, "PARKED");
-
-        if (parked != null && parked.isValidParked()) {
-            return buildParkedResponse(plate, entry, parked);
-        }
-
-        return Mono.just(buildNotParkedResponse(plate, entry));
-    }
-
-
 
     private Mono<PlateStatusResponse> buildParkedResponse(String plate, VehicleModel entry, VehicleModel parked) {
         return spotRepository.findByLatAndLng(parked.lat(), parked.lng())
-                .flatMap(spot -> pricingService.calculateCurrentPriceBySector(spot.sector())
-                        .map(preco -> new PlateStatusResponse(
-                                plate,
-                                preco,
-                                entry != null ? entry.timestamp() : null,
-                                parked.timestamp(),
-                                parked.lat(),
-                                parked.lng()
-                        )));
+                .flatMap(spot ->
+                        pricingService.calculateCurrentPriceBySector(spot.sector())
+                                .map(price -> {
+                                    if (price == Double.MAX_VALUE) {
+                                        throw new IllegalStateException("Setor está totalmente lotado. Entrada não permitida.");
+                                    }
+                                    PlateStatusResponse response = new PlateStatusResponse(
+                                            plate,
+                                            price,
+                                            entry != null ? entry.timestamp() : null,
+                                            parked.timestamp(),
+                                            parked.lat(),
+                                            parked.lng()
+                                    );
+                                    log.info("Placa {} está estacionada em setor {}. Preço atual: {}", plate, spot.sector(), price);
+                                    return response;
+                                })
+                );
     }
 
     private PlateStatusResponse buildNotParkedResponse(String plate, VehicleModel entry) {
@@ -78,4 +99,3 @@ public class PlateService {
                 .orElse(null);
     }
 }
-

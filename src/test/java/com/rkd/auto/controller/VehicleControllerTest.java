@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rkd.auto.config.TestConfig;
 import com.rkd.auto.model.VehicleModel;
 import com.rkd.auto.repository.VehicleRepository;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -14,16 +16,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 @Import(TestConfig.class)
 @AutoConfigureWebTestClient
-public class VehicleControllerTest {
-
-    @Autowired
-    private ObjectMapper objectMapper;
+class VehicleControllerTest {
 
     @Autowired
     private WebTestClient webTestClient;
@@ -31,8 +29,11 @@ public class VehicleControllerTest {
     @Autowired
     private VehicleRepository vehicleRepository;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @AfterEach
-    void tearDown() {
+    void cleanUp() {
         vehicleRepository.deleteAll().block();
     }
 
@@ -54,12 +55,14 @@ public class VehicleControllerTest {
                 .exchange()
                 .expectStatus().isAccepted();
 
-        VehicleModel vehicleModel = vehicleRepository
-                .findByLicensePlateOrderByTimestampDesc("ABC9999")
-                .blockFirst();
+        Awaitility.await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
 
-        assertNotNull(vehicleModel);
-        assertEquals("ABC9999", vehicleModel.licensePlate());
+            VehicleModel vehicleModel = vehicleRepository
+                    .findByLicensePlateOrderByTimestampDesc("ABC9999")
+                    .blockFirst();
+
+            Assertions.assertNotNull(vehicleModel);
+            Assertions.assertEquals("ABC9999", vehicleModel.licensePlate());
+        });
     }
 }
-

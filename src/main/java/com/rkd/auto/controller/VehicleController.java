@@ -1,7 +1,8 @@
 package com.rkd.auto.controller;
 
+import com.rkd.auto.grpc.WebhookEventRequest;
+import com.rkd.auto.producer.VehicleProducer;
 import com.rkd.auto.request.VehicleRequest;
-import com.rkd.auto.service.VehicleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -10,15 +11,36 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/webhook")
 public class VehicleController {
 
-    private final VehicleService vehicleService;
+    private final VehicleProducer vehicleProducer;
 
-    public VehicleController(VehicleService vehicleService) {
-        this.vehicleService = vehicleService;
+    public VehicleController(VehicleProducer vehicleProducer) {
+        this.vehicleProducer = vehicleProducer;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public Mono<Void> handleEvent(@RequestBody VehicleRequest vehicleRequest) {
-        return vehicleService.processWebhookEvent(vehicleRequest).then();
+
+        WebhookEventRequest.Builder builder = WebhookEventRequest.newBuilder()
+                .setLicensePlate(vehicleRequest.licensePlate())
+                .setEventType(vehicleRequest.eventType());
+
+        if (vehicleRequest.entryTime() != null) {
+            builder.setEntryTime(vehicleRequest.entryTime().toString());
+        }
+
+        if (vehicleRequest.exitTime() != null) {
+            builder.setExitTime(vehicleRequest.exitTime().toString());
+        }
+
+        if (vehicleRequest.lat() != null) {
+            builder.setLat(vehicleRequest.lat());
+        }
+
+        if (vehicleRequest.lng() != null) {
+            builder.setLng(vehicleRequest.lng());
+        }
+
+        return vehicleProducer.sendEvent(builder.build());
     }
 }

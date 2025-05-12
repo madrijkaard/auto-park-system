@@ -22,15 +22,15 @@ public class PlateServiceGrpcImpl extends PlateServiceGrpc.PlateServiceImplBase 
         plateService.getPlateStatus(restRequest).subscribe(
                 result -> {
                     PlateStatusResponse.Builder responseBuilder = PlateStatusResponse.newBuilder()
-                            .setLicensePlate(result.license_plate())
-                            .setPriceUntilNow(result.price_until_now());
+                            .setLicensePlate(result.licensePlate())
+                            .setPriceUntilNow(result.priceUntilNow());
 
-                    if (result.entry_time() != null) {
-                        responseBuilder.setEntryTime(result.entry_time().toString());
+                    if (result.entryTime() != null) {
+                        responseBuilder.setEntryTime(result.entryTime().toString());
                     }
 
-                    if (result.time_parked() != null) {
-                        responseBuilder.setTimeParked(result.time_parked().toString());
+                    if (result.timeParked() != null) {
+                        responseBuilder.setTimeParked(result.timeParked().toString());
                     }
 
                     if (result.lat() != null) {

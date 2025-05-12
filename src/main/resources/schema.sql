@@ -30,6 +30,7 @@ CREATE TABLE spot (
     license_plate VARCHAR
 );
 
+
 CREATE TABLE vehicle (
     id BIGSERIAL PRIMARY KEY,
     license_plate VARCHAR NOT NULL,
