@@ -3,6 +3,11 @@ package com.rkd.auto.controller;
 import com.rkd.auto.request.PlateStatusRequest;
 import com.rkd.auto.response.PlateStatusResponse;
 import com.rkd.auto.service.PlateService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +31,16 @@ public class PlateController {
         this.plateService = plateService;
     }
 
+    @Operation(
+            summary = "Retrieve status of a vehicle by license plate",
+            description = "Returns current parking status, price accumulated, location, and entry information for a specific vehicle."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Plate status retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = PlateStatusResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid license plate provided", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Conflicting state (e.g., multiple active entries)", content = @Content)
+    })
     @PostMapping
     public Mono<PlateStatusResponse> getPlateStatus(@RequestBody @Valid PlateStatusRequest plateStatusRequest) {
         return plateService.getPlateStatus(plateStatusRequest)
