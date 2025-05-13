@@ -17,8 +17,8 @@ message PlateStatusRequest {
 message PlateStatusResponse {
   string license_plate = 1;
   double price_until_now = 2;
-  string entry_time = 3;    // ISO 8601
-  string time_parked = 4;   // ISO 8601
+  string entry_time = 3;
+  string time_parked = 4;
   double lat = 5;
   double lng = 6;
 }

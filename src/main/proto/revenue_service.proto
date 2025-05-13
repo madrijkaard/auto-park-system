@@ -11,12 +11,12 @@ service RevenueService {
 }
 
 message RevenueRequest {
-  string date = 1;     // ISO format: YYYY-MM-DD
+  string date = 1;
   string sector = 2;
 }
 
 message RevenueResponse {
   double amount = 1;
   string currency = 2;
-  string timestamp = 3; // ISO 8601
+  string timestamp = 3;
 }
