@@ -52,11 +52,13 @@ public class SpotService {
     }
 
     private Mono<SpotStatusResponse> buildSpotStatusResponse(SpotModel spot) {
-        String licensePlate = spot.licensePlate() != null ? spot.licensePlate() : "";
+
+        var licensePlate = spot.licensePlate() != null ? spot.licensePlate() : "";
 
         return vehicleRepository.findByLicensePlateOrderByTimestampDesc(licensePlate)
                 .collectList()
                 .flatMap(vehicleEvents -> {
+
                     VehicleModel entryEvent = findEventByType(vehicleEvents, "ENTRY");
                     VehicleModel parkedEvent = findEventByType(vehicleEvents, "PARKED");
 
