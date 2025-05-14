@@ -28,7 +28,7 @@ public class VehicleServiceGrpcImpl extends VehicleServiceGrpc.VehicleServiceImp
                         request.getLng()
                 );
 
-        vehicleService.processWebhookEvent(restRequest).then().subscribe(
+        vehicleService.registerParkingEvent(restRequest).then().subscribe(
                 unused -> {
                     responseObserver.onNext(EmptyResponse.newBuilder().build());
                     responseObserver.onCompleted();

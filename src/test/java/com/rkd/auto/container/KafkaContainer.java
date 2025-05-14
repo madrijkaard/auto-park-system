@@ -11,8 +11,8 @@ public class KafkaContainer implements ContainerConfig {
     private final org.testcontainers.containers.KafkaContainer kafkaContainer;
 
     public KafkaContainer() {
-        this.kafkaContainer = new org.testcontainers.containers.KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.1"));
-        this.kafkaContainer.start();
+        kafkaContainer = new org.testcontainers.containers.KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.5.1"));
+        kafkaContainer.start();
     }
 
     @Override

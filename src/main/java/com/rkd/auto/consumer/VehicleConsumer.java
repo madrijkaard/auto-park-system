@@ -32,7 +32,7 @@ public class VehicleConsumer {
                     req.getLng()
             );
 
-            vehicleService.processWebhookEvent(restRequest)
+            vehicleService.registerParkingEvent(restRequest)
                     .doOnSuccess(saved -> {
                         System.out.printf("Veículo processado: %s - %s%n", saved.licensePlate(), saved.timestamp());
                     })

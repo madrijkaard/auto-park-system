@@ -9,6 +9,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @TestConfiguration
 public class TestConfig {
+
     @Bean
     public PostgresContainer postgresContainer() {
         return new PostgresContainer();

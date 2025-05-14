@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 
 import static com.rkd.auto.type.ExceptionType.NOT_FOUND;
@@ -23,16 +25,16 @@ public class SpotService {
 
     private final SpotRepository spotRepository;
     private final VehicleRepository vehicleRepository;
-    private final PricingService pricingService;
+    private final PricingCacheService pricingCacheService;
 
     public SpotService(
             SpotRepository spotRepository,
             VehicleRepository vehicleRepository,
-            PricingService pricingService
+            PricingCacheService pricingCacheService
     ) {
         this.spotRepository = spotRepository;
         this.vehicleRepository = vehicleRepository;
-        this.pricingService = pricingService;
+        this.pricingCacheService = pricingCacheService;
     }
 
     public Mono<SpotStatusResponse> getSpotStatus(SpotStatusRequest request) {
@@ -68,10 +70,10 @@ public class SpotService {
                         ));
                     }
 
-                    return pricingService.calculateCurrentPriceBySector(spot.sector())
-                            .onErrorReturn(Double.MAX_VALUE)
+                    return pricingCacheService.getPriceForSector(spot.sector())
+                            .map(BigDecimal::doubleValue)
                             .map(pricePerHour -> {
-                                long minutesParked = java.time.Duration.between(parkedEvent.timestamp(), java.time.ZonedDateTime.now()).toMinutes();
+                                long minutesParked = Duration.between(parkedEvent.timestamp(), java.time.ZonedDateTime.now()).toMinutes();
                                 double hours = minutesParked / 60.0;
                                 double totalPrice = roundToTwoDecimals(pricePerHour * hours);
 

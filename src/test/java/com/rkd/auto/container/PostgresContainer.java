@@ -13,12 +13,12 @@ public class PostgresContainer implements ContainerConfig {
     private final PostgreSQLContainer<?> postgresSqlContainer;
 
     public PostgresContainer() {
-        this.postgresSqlContainer = new PostgreSQLContainer<>("postgres:latest")
+        postgresSqlContainer = new PostgreSQLContainer<>("postgres:latest")
                 .withDatabaseName("auto-park-system")
                 .withUsername(UUID.randomUUID().toString())
                 .withPassword(UUID.randomUUID().toString());
 
-        this.postgresSqlContainer.start();
+        postgresSqlContainer.start();
     }
 
     @Override

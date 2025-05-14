@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 
@@ -20,16 +21,16 @@ public class PlateService {
 
     private final VehicleRepository vehicleRepository;
     private final SpotRepository spotRepository;
-    private final PricingService pricingService;
+    private final PricingCacheService pricingCacheService;
 
     public PlateService(
             VehicleRepository vehicleRepository,
             SpotRepository spotRepository,
-            PricingService pricingService
+            PricingCacheService pricingCacheService
     ) {
         this.vehicleRepository = vehicleRepository;
         this.spotRepository = spotRepository;
-        this.pricingService = pricingService;
+        this.pricingCacheService = pricingCacheService;
     }
 
     public Mono<PlateStatusResponse> getPlateStatus(PlateStatusRequest request) {
@@ -60,7 +61,8 @@ public class PlateService {
     private Mono<PlateStatusResponse> buildParkedResponse(String plate, VehicleModel entry, VehicleModel parked) {
         return spotRepository.findByLatAndLng(parked.lat(), parked.lng())
                 .flatMap(spot ->
-                        pricingService.calculateCurrentPriceBySector(spot.sector())
+                        pricingCacheService.getPriceForSector(spot.sector())
+                                .map(BigDecimal::doubleValue)
                                 .map(pricePerHour -> {
                                     if (pricePerHour == Double.MAX_VALUE) {
                                         throw new IllegalStateException("Setor está totalmente lotado. Entrada não permitida.");

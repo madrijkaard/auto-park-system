@@ -14,7 +14,7 @@ services:
     volumes:
       - ./volumes/postgres/pgdata:/var/lib/postgresql/data
 
-  pgadmin: # http://localhost:5050
+  pgadmin: # http://localhost:5050/browser/
     image: dpage/pgadmin4:latest
     container_name: pg_admin
     restart: always
@@ -50,3 +50,33 @@ services:
       - ./volumes/kafka:/bitnami/kafka
     depends_on:
       - zookeeper
+
+  cassandra:
+    image: cassandra:4.1
+    container_name: cassandra
+    restart: unless-stopped
+    ports:
+      - "9042:9042"
+    volumes:
+      - ./volumes/cassandra:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES;' 127.0.0.1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  init-cassandra:
+    image: cassandra:4.1
+    container_name: init_cassandra
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    entrypoint: /bin/sh
+    command: -c "
+      echo '🔧 Criando keyspace auto_park_system (se necessário)...';
+      cqlsh cassandra 9042 -e \"
+      CREATE KEYSPACE IF NOT EXISTS auto_park_system
+      WITH replication = {'class':'SimpleStrategy','replication_factor':1};
+      \";
+      echo '✅ Keyspace pronto.';"
+    restart: "no"

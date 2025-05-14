@@ -20,6 +20,7 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -88,7 +89,7 @@ class PlateControllerTest {
 
         String licensePlate = "TEST123";
         String sector = "DYNAMIC_SECTOR" + totalSpots + "_" + occupiedCount;
-        double basePrice = 10.0;
+        BigDecimal basePrice = BigDecimal.valueOf(10.0);
         ZonedDateTime entryTime = ZonedDateTime.parse("2025-05-11T12:00:00Z");
         ZonedDateTime parkedTime = entryTime.plusMinutes(2);
         double lat = -23.5;
@@ -174,7 +175,7 @@ class PlateControllerTest {
 
         SectorModel sectorModel = new SectorModel(
                 sector,
-                10.0,
+                BigDecimal.valueOf(10.0),
                 totalSpots,
                 LocalTime.of(6, 0),
                 LocalTime.of(22, 0),
