@@ -11,7 +11,6 @@ import static com.rkd.auto.definition.MessageDefinition.Vehicle.*;
 
 @Schema(description = "Represents a vehicle movement event sent to the webhook.")
 public record VehicleRequest(
-
         @Schema(
                 description = "License plate of the vehicle",
                 example = "ZUL0001"

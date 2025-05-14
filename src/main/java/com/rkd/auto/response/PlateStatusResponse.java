@@ -7,7 +7,6 @@ import java.time.ZonedDateTime;
 
 @Schema(description = "Response containing the current status of a vehicle identified by its license plate.")
 public record PlateStatusResponse(
-
         @Schema(description = "License plate of the vehicle", example = "ZUL0001")
         @JsonProperty("license_plate")
         String licensePlate,
@@ -29,6 +28,5 @@ public record PlateStatusResponse(
 
         @Schema(description = "Current longitude of the vehicle", example = "-46.655981")
         Double lng
-
 ) {
 }

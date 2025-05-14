@@ -7,7 +7,6 @@ import java.time.ZonedDateTime;
 
 @Schema(description = "Response containing information about a parking spot status.")
 public record SpotStatusResponse(
-
         @Schema(description = "Whether the spot is currently occupied", example = "true")
         boolean ocupied,
 
@@ -26,5 +25,5 @@ public record SpotStatusResponse(
         @Schema(description = "Timestamp when the vehicle parked in the spot", example = "2025-01-01T12:15:00Z")
         @JsonProperty("parked_time")
         ZonedDateTime timeParked
-
-) {}
+) {
+}

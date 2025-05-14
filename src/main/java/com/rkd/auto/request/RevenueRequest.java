@@ -10,7 +10,6 @@ import static com.rkd.auto.definition.MessageDefinition.Revenue.SECTOR_CANNOT_BL
 
 @Schema(description = "Payload containing the parameters to request revenue calculation.")
 public record RevenueRequest(
-
         @Schema(description = "Date for which revenue should be calculated", example = "2025-01-01")
         @NotNull(message = DATE_CANNOT_NULL)
         LocalDate date,
@@ -18,5 +17,4 @@ public record RevenueRequest(
         @Schema(description = "Sector name (e.g., A, B)", example = "A")
         @NotNull(message = SECTOR_CANNOT_BLANK)
         String sector
-
 ) {}

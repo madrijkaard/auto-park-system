@@ -33,12 +33,7 @@ public class PricingAspect {
         this.cacheRepo = cacheRepo;
     }
 
-    /**
-     * Executa depois que VehicleService.registerParkingEvent(..) conclui
-     */
-    @AfterReturning(
-            pointcut = "execution(* com.rkd.auto.service.VehicleService.registerParkingEvent(..))",
-            returning = "result")
+    @AfterReturning(pointcut = "execution(* com.rkd.auto.service.VehicleService.registerParkingEvent(..))", returning = "result")
     public void updatePriceAfterEvent(Mono<?> result) {
 
         result.subscribe(event -> {
@@ -48,7 +43,7 @@ public class PricingAspect {
                 double lng = vehicle.lng();
 
                 spotRepository.findByLatAndLng(lat, lng)
-                        .flatMap(this::updatePriceForSector)       // grava/atualiza
+                        .flatMap(this::updatePriceForSector)
                         .switchIfEmpty(Mono.fromRunnable(() ->
                                 log.warn("Nenhuma vaga encontrada para lat={}, lng={}", lat, lng)))
                         .subscribe();
@@ -56,9 +51,6 @@ public class PricingAspect {
         });
     }
 
-    /**
-     * Recalcula e faz UPSERT do preço para o setor informado
-     */
     private Mono<Boolean> updatePriceForSector(SpotModel spot) {
 
         String sector = spot.sector();
@@ -66,10 +58,8 @@ public class PricingAspect {
         return pricingService.calculateCurrentPriceBySector(sector)
                 .map(price -> new PriceCassandra(sector, price, Instant.now()))
                 .flatMap(cacheRepo::save)
-                .doOnSuccess(e ->
-                        log.info("Preço salvo/atualizado no Scylla para setor '{}'", sector))
-                .doOnError(e ->
-                        log.error("Falha ao salvar preço p/ setor '{}': {}", sector, e.getMessage()))
+                .doOnSuccess(e -> log.info("Preço salvo/atualizado no Scylla para setor '{}'", sector))
+                .doOnError(e -> log.error("Falha ao salvar preço p/ setor '{}': {}", sector, e.getMessage()))
                 .thenReturn(Boolean.TRUE);
     }
 }
